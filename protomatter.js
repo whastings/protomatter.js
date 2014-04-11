@@ -1,4 +1,5 @@
 (function(root) {
+  "use strict";
 
   var Protomatter = {};
 
@@ -11,5 +12,38 @@
   } else {
     root.Protomatter = Protomatter;
   }
+
+  // Convert object properties to property descriptors.
+  var getDescriptors = function(object) {
+    var properties = {};
+    for (var property in object) {
+      if (!object.hasOwnProperty(property)) {
+        continue;
+      }
+      properties[property] = { value: object[property] };
+    }
+    return properties;
+  };
+
+  Protomatter.create = function(proto, superProto) {
+    if (superProto) {
+      proto = Object.create(superProto, getDescriptors(proto));
+      proto.callSuper = function(methodName) {
+        if (typeof superProto[methodName] !== 'function') {
+          throw new Error('Method ' + methodName + ' is not defined.');
+        }
+        var args = Array.prototype.slice.call(arguments, 1);
+        return superProto[methodName].apply(this, args);
+      };
+    }
+    proto.create = function() {
+      var newObject = Object.create(proto);
+      if (typeof proto.initialize === 'function') {
+        proto.initialize.apply(newObject, arguments);
+      }
+      return newObject;
+    };
+    return proto;
+  };
 
 })(this);
