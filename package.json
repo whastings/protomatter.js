@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/whastings/protomatter.js/issues"
   },
-  "homepage": "https://github.com/whastings/protomatter.js"
+  "homepage": "https://github.com/whastings/protomatter.js",
+  "devDependencies": {
+    "jasmine-node": "~1.14.3"
+  }
 }
