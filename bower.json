@@ -1,0 +1,22 @@
+{
+  "name": "protomatter",
+  "main": "protomatter.js",
+  "version": "0.1.0",
+  "homepage": "https://github.com/whastings/protomatter.js",
+  "authors": [
+    "Will Hastings <will@objectdotcreate.net>"
+  ],
+  "description": "A simple tool for constructor-less prototypal inheritance in JavaScript.",
+  "moduleType": [
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "JavaScript",
+    "prototype",
+    "prototypal",
+    "inheritance",
+    "super"
+  ],
+  "license": "MIT"
+}
