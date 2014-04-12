@@ -1,0 +1,16 @@
+{
+  "globalstrict": true,
+  "globals": {
+    "beforeEach": false,
+    "console": false,
+    "describe": false,
+    "document": false,
+    "expect": false,
+    "exports": false,
+    "it": false,
+    "module": false,
+    "require": false,
+    "window": false
+  },
+  "sub": true
+}
