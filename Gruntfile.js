@@ -13,6 +13,9 @@ module.exports = function(grunt) {
       }
     },
     uglify: {
+      options: {
+        preserveComments: 'some'
+      },
       build: {
         files: {
           'protomatter.min.js': ['protomatter.js']
