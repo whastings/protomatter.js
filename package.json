@@ -24,6 +24,9 @@
   },
   "homepage": "https://github.com/whastings/protomatter.js",
   "devDependencies": {
-    "jasmine-node": "~1.14.3"
+    "jasmine-node": "~1.14.3",
+    "grunt": "~0.4.4",
+    "grunt-shell": "~0.6.4",
+    "grunt-contrib-uglify": "~0.4.0"
   }
 }
