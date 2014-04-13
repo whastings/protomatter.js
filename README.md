@@ -14,6 +14,20 @@ This piece is what inspired me to write this library.
 [Object.create()][object-dot-create],
 such as Node.js, Internet Explorer 9+, or another modern browser.
 
+## Installation
+
+For Node.js:
+
+```bash
+npm install protomatter
+```
+
+With Bower:
+
+```bash
+bower install protomatter.js
+```
+
 ## Usage
 
 ### Creating a Prototype
