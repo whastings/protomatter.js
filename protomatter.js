@@ -36,6 +36,17 @@
     return Object.getPrototypeOf(this);
   };
 
+  var hasPrototype = function(proto) {
+    var thisProto = Object.getPrototypeOf(this);
+    if (thisProto === proto) {
+      return true;
+    }
+    if (thisProto === Object.prototype) {
+      return false;
+    }
+    return hasPrototype.call(thisProto, proto);
+  };
+
   Protomatter.create = function(proto, superProto) {
     if (superProto) {
       proto = Object.create(superProto, getDescriptors(proto));
@@ -57,6 +68,7 @@
     };
 
     proto.getPrototype = getPrototype;
+    proto.hasPrototype = hasPrototype;
 
     return proto;
   };

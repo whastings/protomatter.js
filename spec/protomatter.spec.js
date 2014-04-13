@@ -126,4 +126,35 @@ describe('Protomatter', function() {
     });
   });
 
+  describe('Proto.hasPrototype', function() {
+    var GrandProto,
+        object,
+        ParentProto,
+        Proto;
+
+    beforeEach(function() {
+      GrandProto = Protomatter.create({});
+      ParentProto = Protomatter.create({}, GrandProto);
+      Proto = Protomatter.create({}, ParentProto);
+      object = Proto.create();
+    });
+
+    it('returns true for the immediate prototype', function() {
+      expect(object.hasPrototype(Proto)).toBe(true);
+    });
+
+    it('returns true for the second prototype in the chain', function() {
+      expect(object.hasPrototype(ParentProto)).toBe(true);
+    });
+
+    it('returns true for the third prototype in the chain', function() {
+      expect(object.hasPrototype(GrandProto)).toBe(true);
+    });
+
+    it('returns false for a prototype that is not in the chain', function() {
+      var OtherProto = Protomatter.create({});
+      expect(object.hasPrototype(OtherProto)).toBe(false);
+    });
+  });
+
 });
