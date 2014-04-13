@@ -10,6 +10,7 @@
     "it": false,
     "module": false,
     "require": false,
+    "spyOn": false,
     "window": false
   },
   "sub": true

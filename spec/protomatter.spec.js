@@ -69,4 +69,47 @@ describe('Protomatter', function() {
     });
   });
 
+  describe('Proto.callSuper', function() {
+    var context,
+        object,
+        Proto,
+        SuperProto;
+
+    beforeEach(function() {
+      SuperProto = Protomatter.create({
+        superMethod: function() {
+          context = this;
+          return 'super method';
+        }
+      });
+      spyOn(SuperProto, 'superMethod');
+      Proto = Protomatter.create({
+        protoMethod: function() {
+          return this.callSuper('superMethod', 'an argument');
+        }
+      }, SuperProto);
+      var object = Proto.create();
+      object.protoMethod();
+    });
+
+    it('calls the specified method in the super prototype', function() {
+      expect(SuperProto.superMethod).toHaveBeenCalled();
+    });
+
+    it('calls the super prototype method with the passed args', function() {
+      expect(SuperProto.superMethod).toHaveBeenCalledWith('an argument');
+    });
+
+    it('throws an error if asked to call a non-existing method', function() {
+      var badSuperCall = function() {
+        object.callSuper('missingMethod');
+      };
+      expect(badSuperCall).toThrow();
+    });
+
+    it('calls the super prototype method with the right context', function() {
+      expect(context).toBe(object);
+    });
+  });
+
 });
