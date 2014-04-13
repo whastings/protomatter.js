@@ -94,5 +94,14 @@ first two arguments. It also redefines the `stats()` method,
 using `callSuper()` to retrieve the result of `Computer`'s implementation to
 combine with its own.
 
+### getPrototype()
+
+This method is a simple wrapper around `Object.getPrototypeOf()`. Use it
+to retrieve the prototype of a particular instance.
+
+```javascript
+console.log(ultraComputer.getPrototype() === UltraBook); // True
+```
+
 [object-dot-create]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
 [kyle-simpson-article]: http://davidwalsh.name/javascript-objects-deconstruction

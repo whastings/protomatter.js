@@ -112,4 +112,18 @@ describe('Protomatter', function() {
     });
   });
 
+  describe('Proto.getPrototype', function() {
+    var object,
+        Proto;
+
+    beforeEach(function() {
+      Proto = Protomatter.create({});
+      object = Proto.create();
+    });
+
+    it('returns the prototype for an instance', function() {
+      expect(object.getPrototype()).toBe(Proto);
+    });
+  });
+
 });

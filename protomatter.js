@@ -32,6 +32,10 @@
     return properties;
   };
 
+  var getPrototype = function() {
+    return Object.getPrototypeOf(this);
+  };
+
   Protomatter.create = function(proto, superProto) {
     if (superProto) {
       proto = Object.create(superProto, getDescriptors(proto));
@@ -43,6 +47,7 @@
         return superProto[methodName].apply(this, args);
       };
     }
+
     proto.create = function() {
       var newObject = Object.create(proto);
       if (typeof proto.initialize === 'function') {
@@ -50,6 +55,9 @@
       }
       return newObject;
     };
+
+    proto.getPrototype = getPrototype;
+
     return proto;
   };
 
