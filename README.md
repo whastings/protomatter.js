@@ -6,7 +6,7 @@ the use of constructor functions and the `new` keyword. Using prototypes
 directly lets you work in cooperation with the true nature of JavaScript,
 instead of working against it by trying to replicate classical inheritance.
 
-For more info, see Kyle Simpson's
+For more info on the benefits of using prototypes directly, see Kyle Simpson's
 [great article on JS without constructors][kyle-simpson-article].
 This piece is what inspired me to write this library.
 
