@@ -5,69 +5,55 @@
  * Protomatter.js may be freely distributed under the MIT license.
  */
 
+/* global exports:true */
 (function(root) {
   'use strict';
 
-  var Protomatter = {};
+  var Protomatter = {},
+      slice = Array.prototype.slice,
+      baseProto;
 
-  // Export properly in Node.js/Browserify:
-  if (typeof exports !== 'undefined') {
-    if (typeof module !== 'undefined' && module.exports) {
-      exports = module.exports = Protomatter;
-    }
-    exports.Protomatter = Protomatter;
-  } else {
-    root.Protomatter = Protomatter;
-  }
+  baseProto = {
+    getPrototype: function() {
+      return Object.getPrototypeOf(this);
+    },
 
-  // Convert object properties to property descriptors.
-  var getDescriptors = function(object) {
-    var properties = {};
-    for (var property in object) {
-      if (!object.hasOwnProperty(property)) {
-        continue;
+    hasPrototype: function(proto) {
+      // TODO: Replace w/ Object.prototype.isPrototypeOf().
+      var thisProto = Object.getPrototypeOf(this);
+      if (thisProto === proto) {
+        return true;
       }
-      properties[property] = { value: object[property] };
+      if (thisProto === Object.prototype) {
+        return false;
+      }
+      return baseProto.hasPrototype.call(thisProto, proto);
     }
-    return properties;
   };
 
-  var getPrototype = function() {
-    return Object.getPrototypeOf(this);
-  };
-
-  var hasPrototype = function(proto) {
-    var thisProto = Object.getPrototypeOf(this);
-    if (thisProto === proto) {
-      return true;
-    }
-    if (thisProto === Object.prototype) {
-      return false;
-    }
-    return hasPrototype.call(thisProto, proto);
-  };
-
-  Protomatter.create = function(proto, superProto, privateMode) {
-    var privateMethods;
+  Protomatter.create = function(protoProps, superProto, privateMode) {
+    var privateMethods,
+        proto;
 
     if (typeof privateMode === 'undefined') {
       privateMode = true;
     }
 
     if (superProto) {
-      proto = Object.create(superProto, getDescriptors(proto));
-      proto.callSuper = function(methodName) {
-        if (typeof superProto[methodName] !== 'function') {
-          throw new Error('Method ' + methodName + ' is not defined.');
-        }
-        var args = Array.prototype.slice.call(arguments, 1);
-        return superProto[methodName].apply(this, args);
-      };
+      proto = Object.create(superProto);
+      proto.callSuper = createCallSuper(superProto);
+    } else {
+      proto = Object.create(baseProto);
     }
 
+    objForEach(protoProps, function(prop, key) {
+      if (key !== 'private') {
+        proto[key] = prop;
+      }
+    });
+
     if (privateMode) {
-      privateMethods = proto.private;
-      delete proto.private;
+      privateMethods = protoProps.private;
     }
 
     proto.create = function() {
@@ -86,11 +72,19 @@
       return newObject;
     };
 
-    proto.getPrototype = getPrototype;
-    proto.hasPrototype = hasPrototype;
-
     return proto;
   };
+
+  function createCallSuper(superProto) {
+    return function callSuper(methodName) {
+      var args;
+      if (typeof superProto[methodName] !== 'function') {
+        throw new Error('Method ' + methodName + ' is not defined.');
+      }
+      args = slice.call(arguments, 1);
+      return superProto[methodName].apply(this, args);
+    };
+  }
 
   function objForEach(object, callback) {
     for (var key in object) {
@@ -110,9 +104,6 @@
 
     objForEach(proto, function(method, name) {
       if (typeof method === 'function') {
-        if (name === 'hasPrototype' || name === 'getPrototype') {
-          return;
-        }
         newObject[name] = method.bind(privateContext);
       }
     });
@@ -120,4 +111,13 @@
     return privateContext;
   }
 
+  // Export properly in Node.js/Browserify:
+  if (typeof exports !== 'undefined') {
+    if (typeof module !== 'undefined' && module.exports) {
+      exports = module.exports = Protomatter;
+    }
+    exports.Protomatter = Protomatter;
+  } else {
+    root.Protomatter = Protomatter;
+  }
 })(this);

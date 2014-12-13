@@ -7,8 +7,20 @@ describe('Protomatter', function() {
   describe('.create', function() {
 
     it('adds a create method to the prototype', function() {
-      var proto = Protomatter.create({testProperty: 'test value'});
+      var proto = Protomatter.create({});
       expect(typeof proto.create).toBe('function');
+    });
+
+    it('adds passed properties to the prototype', function() {
+      var proto = Protomatter.create({var1: 'value1', var2: 'value2'});
+      expect(proto.var1).toBe('value1');
+      expect(proto.var2).toBe('value2');
+    });
+
+    it('leaves the private property off the prototype', function() {
+      var proto = Protomatter.create({var1: 'value1', private: {}});
+      expect(proto.var1).toBe('value1');
+      expect(proto.private).toBeUndefined();
     });
 
     describe('with a super prototype', function() {
