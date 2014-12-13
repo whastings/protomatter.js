@@ -6,7 +6,7 @@
  */
 
 (function(root) {
-  "use strict";
+  'use strict';
 
   var Protomatter = {};
 
@@ -47,7 +47,13 @@
     return hasPrototype.call(thisProto, proto);
   };
 
-  Protomatter.create = function(proto, superProto) {
+  Protomatter.create = function(proto, superProto, privateMode) {
+    var privateMethods;
+
+    if (typeof privateMode === 'undefined') {
+      privateMode = true;
+    }
+
     if (superProto) {
       proto = Object.create(superProto, getDescriptors(proto));
       proto.callSuper = function(methodName) {
@@ -59,10 +65,23 @@
       };
     }
 
+    if (privateMode) {
+      privateMethods = proto.private;
+      delete proto.private;
+    }
+
     proto.create = function() {
-      var newObject = Object.create(proto);
+      var newObject = Object.create(proto),
+          privateContext,
+          initContext;
+
+      if (privateMode) {
+        privateContext = preparePrivateContext(newObject, privateMethods, proto);
+      }
+
       if (typeof proto.initialize === 'function') {
-        proto.initialize.apply(newObject, arguments);
+        initContext = privateMode ? privateContext : newObject;
+        proto.initialize.apply(initContext, arguments);
       }
       return newObject;
     };
@@ -72,5 +91,33 @@
 
     return proto;
   };
+
+  function objForEach(object, callback) {
+    for (var key in object) {
+      if (object.hasOwnProperty(key)) {
+        callback(object[key], key);
+      }
+    }
+  }
+
+  function preparePrivateContext(newObject, methods, proto) {
+    var privateContext = Object.create(newObject);
+    privateContext.public = newObject;
+
+    objForEach(methods, function(method, name) {
+      privateContext[name] = method;
+    });
+
+    objForEach(proto, function(method, name) {
+      if (typeof method === 'function') {
+        if (name === 'hasPrototype' || name === 'getPrototype') {
+          return;
+        }
+        newObject[name] = method.bind(privateContext);
+      }
+    });
+
+    return privateContext;
+  }
 
 })(this);

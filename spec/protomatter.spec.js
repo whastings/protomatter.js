@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var Protomatter = require('../protomatter.js');
 
@@ -44,10 +44,24 @@ describe('Protomatter', function() {
 
     beforeEach(function() {
       Proto = Protomatter.create({
+        getVar1: function() {
+          return this.var1;
+        },
+        getVar2: function() {
+          return this.var2;
+        },
         initialize: function(var1, var2, var3) {
           this.var1 = var1;
           this.var2 = var2;
-          this.var3 = var3;
+          this.public.var3 = var3;
+        },
+        private: {
+          privateMethod: function() {
+            return this.var1 + ' ' + this.var2;
+          }
+        },
+        publicMethod: function() {
+          return this.privateMethod();
         },
         testProperty: 'test value'
       });
@@ -63,8 +77,38 @@ describe('Protomatter', function() {
     });
 
     it('invokes its initialize function to set initial state', function() {
-      [1, 2, 3].forEach(function(num) {
-        expect(newObject['var' + num]).toBe('value' + num);
+      expect(newObject.getVar1()).toBe('value1');
+      expect(newObject.getVar2()).toBe('value2');
+    });
+
+    it('protects instance variables from public access', function() {
+      expect(newObject.var1).toBeUndefined();
+      expect(newObject.var2).toBeUndefined();
+    });
+
+    it('allows access to instance variables explicitly made public', function() {
+      expect(newObject.var3).toBe('value3');
+    });
+
+    it('protects private methods from being called externally', function() {
+      expect(newObject.publicMethod()).toBe('value1 value2');
+      expect(newObject.privateMethod).toBeUndefined();
+    });
+
+    describe('when private mode off', function() {
+      beforeEach(function() {
+        Proto = Protomatter.create({
+          initialize: function(var1, var2) {
+            this.var1 = var1;
+            this.var2 = var2;
+          }
+        }, null, false);
+        newObject = Proto.create('value1', 'value2');
+      });
+
+      it('does not prevent public access to instance variables', function() {
+        expect(newObject.var1).toBe('value1');
+        expect(newObject.var2).toBe('value2');
       });
     });
   });
