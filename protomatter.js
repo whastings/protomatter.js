@@ -13,6 +13,8 @@
       slice = Array.prototype.slice,
       baseProto;
 
+  var MIXIN_ERROR = 'This object type does not accept mixins.';
+
   baseProto = {
     getPrototype: function() {
       return Object.getPrototypeOf(this);
@@ -31,13 +33,15 @@
     }
   };
 
-  Protomatter.create = function(protoProps, superProto, privateMode) {
-    var privateMethods,
+  Protomatter.create = function(protoProps, superProto, options) {
+    var privateMode,
+        privateMethods,
         proto;
 
-    if (typeof privateMode === 'undefined') {
-      privateMode = true;
-    }
+    options = options || {};
+    options.allowMixins = options.allowMixins === undefined ?
+      true : options.allowMixins;
+    privateMode = options.privateMode === undefined ? true : options.privateMode;
 
     if (superProto) {
       proto = Object.create(superProto);
@@ -65,15 +69,43 @@
         privateContext = preparePrivateContext(newObject, privateMethods, proto);
       }
 
+      initContext = privateMode ? privateContext : newObject;
+      initContext.allowMixins = !!options.allowMixins;
       if (typeof proto.initialize === 'function') {
-        initContext = privateMode ? privateContext : newObject;
         proto.initialize.apply(initContext, arguments);
       }
       return newObject;
     };
 
+    proto.allowsMixins = allowsMixins;
+    proto.bindFunction = bindInstanceFunction;
+
     return proto;
   };
+
+  Protomatter.mixIn = function(instance, mixin) {
+    if (!instance.allowsMixins()) {
+      throw new Error(MIXIN_ERROR);
+    }
+
+    objForEach(mixin, function(prop, key) {
+      if (typeof prop === 'function') {
+        prop = instance.bindFunction(prop);
+      }
+      instance[key] = prop;
+    });
+  };
+
+  function allowsMixins() {
+    return this.allowMixins;
+  }
+
+  function bindInstanceFunction(func) {
+    if (!this.allowMixins) {
+      throw new Error(MIXIN_ERROR);
+    }
+    return func.bind(this);
+  }
 
   function createCallSuper(superProto) {
     return function callSuper(methodName) {

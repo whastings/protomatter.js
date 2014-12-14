@@ -50,6 +50,45 @@ describe('Protomatter', function() {
     });
   });
 
+  describe('.mixIn', function() {
+    var Proto,
+        instance,
+        mixin;
+
+    beforeEach(function() {
+      Proto = Protomatter.create({});
+      instance = Proto.create();
+      mixin = {
+        getThing: function() {
+          return this.thing;
+        },
+        setThing: function(thing) {
+          this.thing = thing;
+        }
+      };
+    });
+
+    it('mixes in functions, binding them to instance private context', function() {
+      Protomatter.mixIn(instance, mixin);
+
+      instance.setThing('foo');
+      expect(instance.thing).toBeUndefined();
+      expect(instance.getThing()).toBe('foo');
+    });
+
+    it('throws an error if proto disallows mixins', function() {
+      Proto = Protomatter.create({}, null, {allowMixins: false});
+      instance = Proto.create();
+      function tryMixin() {
+        Protomatter.mixIn(instance, mixin);
+      }
+
+      expect(tryMixin).toThrow();
+      expect(instance.getThing).toBeUndefined();
+      expect(instance.setThing).toBeUndefined();
+    });
+  });
+
   describe('Proto.create', function() {
     var newObject,
         Proto;
@@ -127,7 +166,7 @@ describe('Protomatter', function() {
             this.var1 = var1;
             this.var2 = var2;
           }
-        }, null, false);
+        }, null, {privateMode: false});
         newObject = Proto.create('value1', 'value2');
       });
 
