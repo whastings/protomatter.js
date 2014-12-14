@@ -50,45 +50,6 @@ describe('Protomatter', function() {
     });
   });
 
-  describe('.mixIn', function() {
-    var Proto,
-        instance,
-        mixin;
-
-    beforeEach(function() {
-      Proto = Protomatter.create({});
-      instance = Proto.create();
-      mixin = {
-        getThing: function() {
-          return this.thing;
-        },
-        setThing: function(thing) {
-          this.thing = thing;
-        }
-      };
-    });
-
-    it('mixes in functions, binding them to instance private context', function() {
-      Protomatter.mixIn(instance, mixin);
-
-      instance.setThing('foo');
-      expect(instance.thing).toBeUndefined();
-      expect(instance.getThing()).toBe('foo');
-    });
-
-    it('throws an error if proto disallows mixins', function() {
-      Proto = Protomatter.create({}, null, {allowMixins: false});
-      instance = Proto.create();
-      function tryMixin() {
-        Protomatter.mixIn(instance, mixin);
-      }
-
-      expect(tryMixin).toThrow();
-      expect(instance.getThing).toBeUndefined();
-      expect(instance.setThing).toBeUndefined();
-    });
-  });
-
   describe('Proto.create', function() {
     var newObject,
         Proto;
@@ -217,6 +178,45 @@ describe('Protomatter', function() {
 
     it('calls the super prototype method with the right context', function() {
       expect(context).toBe(object);
+    });
+  });
+
+  describe('Proto.mixIn', function() {
+    var Proto,
+        instance,
+        mixin;
+
+    beforeEach(function() {
+      Proto = Protomatter.create({});
+      instance = Proto.create();
+      mixin = {
+        getThing: function() {
+          return this.thing;
+        },
+        setThing: function(thing) {
+          this.thing = thing;
+        }
+      };
+    });
+
+    it('mixes in functions, binding them to instance private context', function() {
+      instance.mixIn(mixin);
+
+      instance.setThing('foo');
+      expect(instance.thing).toBeUndefined();
+      expect(instance.getThing()).toBe('foo');
+    });
+
+    it('throws an error if proto disallows mixins', function() {
+      Proto = Protomatter.create({}, null, {allowMixins: false});
+      instance = Proto.create();
+      function tryMixin() {
+        instance.mixIn(mixin);
+      }
+
+      expect(tryMixin).toThrow();
+      expect(instance.getThing).toBeUndefined();
+      expect(instance.setThing).toBeUndefined();
     });
   });
 

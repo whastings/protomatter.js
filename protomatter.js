@@ -77,35 +77,10 @@
       return newObject;
     };
 
-    proto.allowsMixins = allowsMixins;
-    proto.bindFunction = bindInstanceFunction;
+    proto.mixIn = mixIn;
 
     return proto;
   };
-
-  Protomatter.mixIn = function(instance, mixin) {
-    if (!instance.allowsMixins()) {
-      throw new Error(MIXIN_ERROR);
-    }
-
-    objForEach(mixin, function(prop, key) {
-      if (typeof prop === 'function') {
-        prop = instance.bindFunction(prop);
-      }
-      instance[key] = prop;
-    });
-  };
-
-  function allowsMixins() {
-    return this.allowMixins;
-  }
-
-  function bindInstanceFunction(func) {
-    if (!this.allowMixins) {
-      throw new Error(MIXIN_ERROR);
-    }
-    return func.bind(this);
-  }
 
   function createCallSuper(superProto) {
     return function callSuper(methodName) {
@@ -116,6 +91,23 @@
       args = slice.call(arguments, 1);
       return superProto[methodName].apply(this, args);
     };
+  }
+
+  function mixIn(mixin) {
+    var destination;
+
+    if (!this.allowMixins) {
+      throw new Error(MIXIN_ERROR);
+    }
+
+    destination = typeof this.public === 'object' ? this.public : this;
+
+    objForEach(mixin, function(prop, key) {
+      if (typeof prop === 'function') {
+        prop = prop.bind(this);
+      }
+      destination[key] = prop;
+    }.bind(this));
   }
 
   function objForEach(object, callback) {
