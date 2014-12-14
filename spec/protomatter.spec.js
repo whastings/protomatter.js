@@ -107,6 +107,19 @@ describe('Protomatter', function() {
       expect(newObject.privateMethod).toBeUndefined();
     });
 
+    it('allows changing context for public method', function() {
+      var newContext = {var1: 'something else'};
+      expect(newObject.getVar1.call(newContext)).toBe('something else');
+    });
+
+    it('calls public methods using late-binding', function() {
+      Proto.getVar1 = function() {
+        return 'something else';
+      };
+
+      expect(newObject.getVar1()).toBe('something else');
+    });
+
     describe('when private mode off', function() {
       beforeEach(function() {
         Proto = Protomatter.create({

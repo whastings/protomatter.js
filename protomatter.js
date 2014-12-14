@@ -104,7 +104,12 @@
 
     objForEach(proto, function(method, name) {
       if (typeof method === 'function') {
-        newObject[name] = method.bind(privateContext);
+        newObject[name] = function() {
+          // Allow context to be overriden by apply() or call().
+          var context = this === newObject ? privateContext : this;
+          // Look up method again to allow late-binding.
+          return proto[name].apply(context, arguments);
+        };
       }
     });
 
