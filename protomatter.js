@@ -11,27 +11,9 @@
 
   var Protomatter = {},
       slice = Array.prototype.slice,
-      baseProto;
+      objProto = Object.prototype;
 
   var MIXIN_ERROR = 'This object type does not accept mixins.';
-
-  baseProto = {
-    getPrototype: function() {
-      return Object.getPrototypeOf(this);
-    },
-
-    hasPrototype: function(proto) {
-      // TODO: Replace w/ Object.prototype.isPrototypeOf().
-      var thisProto = Object.getPrototypeOf(this);
-      if (thisProto === proto) {
-        return true;
-      }
-      if (thisProto === Object.prototype) {
-        return false;
-      }
-      return baseProto.hasPrototype.call(thisProto, proto);
-    }
-  };
 
   Protomatter.create = function(protoProps, superProto, options) {
     var privateMode,
@@ -47,7 +29,7 @@
       proto = Object.create(superProto);
       proto.callSuper = createCallSuper(superProto);
     } else {
-      proto = Object.create(baseProto);
+      proto = {};
     }
 
     objForEach(protoProps, function(prop, key) {
@@ -81,6 +63,28 @@
 
     return proto;
   };
+
+  function bindPublicMethods(proto, newObject, privateContext) {
+    var method,
+        name;
+
+    for (name in proto) {
+      method = proto[name];
+      // Don't bind methods on Object.prototype.
+      if (typeof method !== 'function' || method === objProto[name]) {
+        continue;
+      }
+
+      newObject[name] = (function(methodName) {
+        return function() {
+          // Allow context to be overriden by apply() or call().
+          var context = this === newObject ? privateContext : this;
+          // Look up method again to allow late-binding.
+          return proto[methodName].apply(context, arguments);
+        };
+      })(name);
+    }
+  }
 
   function createCallSuper(superProto) {
     return function callSuper(methodName) {
@@ -122,20 +126,12 @@
     var privateContext = Object.create(newObject);
     privateContext.public = newObject;
 
+    // Add private methods to private context object.
     objForEach(methods, function(method, name) {
       privateContext[name] = method;
     });
 
-    objForEach(proto, function(method, name) {
-      if (typeof method === 'function') {
-        newObject[name] = function() {
-          // Allow context to be overriden by apply() or call().
-          var context = this === newObject ? privateContext : this;
-          // Look up method again to allow late-binding.
-          return proto[name].apply(context, arguments);
-        };
-      }
-    });
+    bindPublicMethods(proto, newObject, privateContext);
 
     return privateContext;
   }

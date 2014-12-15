@@ -120,6 +120,32 @@ describe('Protomatter', function() {
       expect(newObject.getVar1()).toBe('something else');
     });
 
+    it('binds all public methods in prototype chain to private context', function() {
+      var Proto2,
+          Proto3;
+
+      Proto2 = Protomatter.create({
+        getFoo: function() {
+          return this.foo;
+        }
+      }, Proto);
+      Proto3 = Protomatter.create({
+        getBar: function() {
+          return this.bar;
+        },
+        initialize: function(var1, foo, bar) {
+          this.var1 = var1;
+          this.foo = foo;
+          this.bar = bar;
+        }
+      }, Proto2);
+
+      newObject = Proto3.create('value1', 'baz', 'qux');
+      expect(newObject.getVar1()).toBe('value1');
+      expect(newObject.getFoo()).toBe('baz');
+      expect(newObject.getBar()).toBe('qux');
+    });
+
     describe('when private mode off', function() {
       beforeEach(function() {
         Proto = Protomatter.create({
@@ -219,50 +245,4 @@ describe('Protomatter', function() {
       expect(instance.setThing).toBeUndefined();
     });
   });
-
-  describe('Proto.getPrototype', function() {
-    var object,
-        Proto;
-
-    beforeEach(function() {
-      Proto = Protomatter.create({});
-      object = Proto.create();
-    });
-
-    it('returns the prototype for an instance', function() {
-      expect(object.getPrototype()).toBe(Proto);
-    });
-  });
-
-  describe('Proto.hasPrototype', function() {
-    var GrandProto,
-        object,
-        ParentProto,
-        Proto;
-
-    beforeEach(function() {
-      GrandProto = Protomatter.create({});
-      ParentProto = Protomatter.create({}, GrandProto);
-      Proto = Protomatter.create({}, ParentProto);
-      object = Proto.create();
-    });
-
-    it('returns true for the immediate prototype', function() {
-      expect(object.hasPrototype(Proto)).toBe(true);
-    });
-
-    it('returns true for the second prototype in the chain', function() {
-      expect(object.hasPrototype(ParentProto)).toBe(true);
-    });
-
-    it('returns true for the third prototype in the chain', function() {
-      expect(object.hasPrototype(GrandProto)).toBe(true);
-    });
-
-    it('returns false for a prototype that is not in the chain', function() {
-      var OtherProto = Protomatter.create({});
-      expect(object.hasPrototype(OtherProto)).toBe(false);
-    });
-  });
-
 });
