@@ -40,6 +40,13 @@
 
     if (privateMode) {
       privateMethods = protoProps.private;
+      if (privateMethods) {
+        proto._bindPrivate = function(context) {
+          objForEach(privateMethods, function(method, name) {
+            context[name] = method;
+          });
+        };
+      }
     }
 
     proto.create = function() {
@@ -48,7 +55,7 @@
           initContext;
 
       if (privateMode) {
-        privateContext = preparePrivateContext(newObject, privateMethods, proto);
+        privateContext = preparePrivateContext(newObject, proto);
       }
 
       initContext = privateMode ? privateContext : newObject;
@@ -63,6 +70,15 @@
 
     return proto;
   };
+
+  function bindPrivateMethods(privateContext, proto) {
+    while (proto && proto !== objProto) {
+      if (typeof proto._bindPrivate === 'function') {
+        proto._bindPrivate(privateContext);
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+  }
 
   function bindPublicMethods(proto, newObject, privateContext) {
     var method,
@@ -122,15 +138,11 @@
     }
   }
 
-  function preparePrivateContext(newObject, methods, proto) {
+  function preparePrivateContext(newObject, proto) {
     var privateContext = Object.create(newObject);
     privateContext.public = newObject;
 
-    // Add private methods to private context object.
-    objForEach(methods, function(method, name) {
-      privateContext[name] = method;
-    });
-
+    bindPrivateMethods(privateContext, proto);
     bindPublicMethods(proto, newObject, privateContext);
 
     return privateContext;

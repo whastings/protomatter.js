@@ -146,6 +146,13 @@ describe('Protomatter', function() {
       expect(newObject.getBar()).toBe('qux');
     });
 
+    it('binds all private methods in prototype chain to private context', function() {
+      var Proto2 = Protomatter.create({}, Proto);
+      newObject = Proto2.create('foo', 'bar', 'baz');
+
+      expect(newObject.publicMethod()).toBe('foo bar');
+    });
+
     describe('when private mode off', function() {
       beforeEach(function() {
         Proto = Protomatter.create({
