@@ -66,6 +66,7 @@
       return newObject;
     };
 
+    proto.extend = extend;
     proto.mixIn = mixIn;
 
     return proto;
@@ -111,6 +112,10 @@
       args = slice.call(arguments, 1);
       return superProto[methodName].apply(this, args);
     };
+  }
+
+  function extend(props, options) {
+    return Protomatter.create(props, this, options);
   }
 
   function mixIn(mixin) {

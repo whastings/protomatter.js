@@ -214,6 +214,19 @@ describe('Protomatter', function() {
     });
   });
 
+  describe('Proto.extend', function() {
+    it('delegates to Protomatter.create() to set up inheritance', function() {
+      var Proto = Protomatter.create({}),
+          props = {},
+          options = {},
+          result = {};
+      spyOn(Protomatter, 'create').andReturn(result);
+
+      expect(Proto.extend(props, options)).toBe(result);
+      expect(Protomatter.create).toHaveBeenCalledWith(props, Proto, options);
+    });
+  });
+
   describe('Proto.mixIn', function() {
     var Proto,
         instance,
