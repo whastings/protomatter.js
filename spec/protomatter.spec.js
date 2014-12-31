@@ -1,26 +1,46 @@
 'use strict';
 
-var Protomatter = require('../protomatter.js');
+var expect,
+    Protomatter,
+    sinon;
+
+if (typeof require === 'function') {
+  expect = require('chai').expect;
+  Protomatter = require('../protomatter');
+  sinon = require('sinon');
+} else {
+  expect = window.chai.expect;
+  Protomatter = window.Protomatter;
+  sinon = window.sinon;
+}
 
 describe('Protomatter', function() {
+  var sandbox;
+
+  beforeEach(function() {
+    sandbox = sinon.sandbox.create();
+  });
+
+  afterEach(function() {
+    sandbox.restore();
+  });
 
   describe('.create', function() {
-
     it('adds a create method to the prototype', function() {
       var proto = Protomatter.create({});
-      expect(typeof proto.create).toBe('function');
+      expect(proto.create).to.be.a('function');
     });
 
     it('adds passed properties to the prototype', function() {
       var proto = Protomatter.create({var1: 'value1', var2: 'value2'});
-      expect(proto.var1).toBe('value1');
-      expect(proto.var2).toBe('value2');
+      expect(proto.var1).to.equal('value1');
+      expect(proto.var2).to.equal('value2');
     });
 
     it('leaves the private property off the prototype', function() {
       var proto = Protomatter.create({var1: 'value1', private: {}});
-      expect(proto.var1).toBe('value1');
-      expect(proto.private).toBeUndefined();
+      expect(proto.var1).to.equal('value1');
+      expect(proto.private).to.be.undefined;
     });
 
     describe('with a super prototype', function() {
@@ -33,19 +53,19 @@ describe('Protomatter', function() {
       });
 
       it("sets proto's prototype to superProto", function() {
-        expect(Object.getPrototypeOf(proto)).toBe(superProto);
+        expect(Object.getPrototypeOf(proto)).to.equal(superProto);
       });
 
       it('preserves the original property values', function() {
-        expect(proto.testProperty).toBe('test value');
+        expect(proto.testProperty).to.equal('test value');
       });
 
       it('makes superProto properties available to proto', function() {
-        expect(proto.superProperty).toBe('super value');
+        expect(proto.superProperty).to.equal('super value');
       });
 
       it('adds a callSuper method to proto', function() {
-        expect(typeof proto.callSuper).toBe('function');
+        expect(proto.callSuper).to.be.a('function');
       });
     });
   });
@@ -81,35 +101,35 @@ describe('Protomatter', function() {
     });
 
     it('returns an object with proto as its prototype', function() {
-      expect(Object.getPrototypeOf(newObject)).toBe(Proto);
+      expect(Object.getPrototypeOf(newObject)).to.equal(Proto);
     });
 
     it('returns an object that can access its properties', function() {
-      expect(newObject.testProperty).toBe('test value');
+      expect(newObject.testProperty).to.equal('test value');
     });
 
     it('invokes its initialize function to set initial state', function() {
-      expect(newObject.getVar1()).toBe('value1');
-      expect(newObject.getVar2()).toBe('value2');
+      expect(newObject.getVar1()).to.equal('value1');
+      expect(newObject.getVar2()).to.equal('value2');
     });
 
     it('protects instance variables from public access', function() {
-      expect(newObject.var1).toBeUndefined();
-      expect(newObject.var2).toBeUndefined();
+      expect(newObject.var1).to.be.undefined;
+      expect(newObject.var2).to.be.undefined;
     });
 
     it('allows access to instance variables explicitly made public', function() {
-      expect(newObject.var3).toBe('value3');
+      expect(newObject.var3).to.equal('value3');
     });
 
     it('protects private methods from being called externally', function() {
-      expect(newObject.publicMethod()).toBe('value1 value2');
-      expect(newObject.privateMethod).toBeUndefined();
+      expect(newObject.publicMethod()).to.equal('value1 value2');
+      expect(newObject.privateMethod).to.be.undefined;
     });
 
     it('allows changing context for public method', function() {
       var newContext = {var1: 'something else'};
-      expect(newObject.getVar1.call(newContext)).toBe('something else');
+      expect(newObject.getVar1.call(newContext)).to.equal('something else');
     });
 
     it('calls public methods using late-binding', function() {
@@ -117,7 +137,7 @@ describe('Protomatter', function() {
         return 'something else';
       };
 
-      expect(newObject.getVar1()).toBe('something else');
+      expect(newObject.getVar1()).to.equal('something else');
     });
 
     it('binds all public methods in prototype chain to private context', function() {
@@ -141,16 +161,16 @@ describe('Protomatter', function() {
       }, Proto2);
 
       newObject = Proto3.create('value1', 'baz', 'qux');
-      expect(newObject.getVar1()).toBe('value1');
-      expect(newObject.getFoo()).toBe('baz');
-      expect(newObject.getBar()).toBe('qux');
+      expect(newObject.getVar1()).to.equal('value1');
+      expect(newObject.getFoo()).to.equal('baz');
+      expect(newObject.getBar()).to.equal('qux');
     });
 
     it('binds all private methods in prototype chain to private context', function() {
       var Proto2 = Protomatter.create({}, Proto);
       newObject = Proto2.create('foo', 'bar', 'baz');
 
-      expect(newObject.publicMethod()).toBe('foo bar');
+      expect(newObject.publicMethod()).to.equal('foo bar');
     });
 
     describe('when private mode off', function() {
@@ -165,52 +185,53 @@ describe('Protomatter', function() {
       });
 
       it('does not prevent public access to instance variables', function() {
-        expect(newObject.var1).toBe('value1');
-        expect(newObject.var2).toBe('value2');
+        expect(newObject.var1).to.equal('value1');
+        expect(newObject.var2).to.equal('value2');
       });
     });
   });
 
   describe('Proto.callSuper', function() {
-    var context,
-        object,
+    var object,
         Proto,
-        SuperProto;
+        returnVal,
+        SuperProto,
+        spy;
 
     beforeEach(function() {
       SuperProto = Protomatter.create({
-        superMethod: function() {
-          context = this;
-          return 'super method';
-        }
+        superMethod: function() {}
       });
-      spyOn(SuperProto, 'superMethod');
+
+      spy = sandbox.stub(SuperProto, 'superMethod');
+      spy.returns('return value');
+
       Proto = Protomatter.create({
         protoMethod: function() {
           return this.callSuper('superMethod', 'an argument');
         }
       }, SuperProto);
-      var object = Proto.create();
-      object.protoMethod();
+      object = Proto.create();
+      returnVal = object.protoMethod();
     });
 
     it('calls the specified method in the super prototype', function() {
-      expect(SuperProto.superMethod).toHaveBeenCalled();
+      expect(spy.calledOnce).to.be.true;
     });
 
     it('calls the super prototype method with the passed args', function() {
-      expect(SuperProto.superMethod).toHaveBeenCalledWith('an argument');
+      expect(spy.calledWith('an argument')).to.be.true;
+    });
+
+    it('returns the return value of the super prototype method', function() {
+      expect(returnVal).to.equal('return value');
     });
 
     it('throws an error if asked to call a non-existing method', function() {
       var badSuperCall = function() {
         object.callSuper('missingMethod');
       };
-      expect(badSuperCall).toThrow();
-    });
-
-    it('calls the super prototype method with the right context', function() {
-      expect(context).toBe(object);
+      expect(badSuperCall).to.throw(Error);
     });
   });
 
@@ -219,11 +240,12 @@ describe('Protomatter', function() {
       var Proto = Protomatter.create({}),
           props = {},
           options = {},
-          result = {};
-      spyOn(Protomatter, 'create').andReturn(result);
+          result = {},
+          spy = sandbox.stub(Protomatter, 'create');
+      spy.returns(result);
 
-      expect(Proto.extend(props, options)).toBe(result);
-      expect(Protomatter.create).toHaveBeenCalledWith(props, Proto, options);
+      expect(Proto.extend(props, options)).to.equal(result);
+      expect(spy.calledWith(props, Proto, options)).to.be.true;
     });
   });
 
@@ -249,8 +271,8 @@ describe('Protomatter', function() {
       instance.mixIn(mixin);
 
       instance.setThing('foo');
-      expect(instance.thing).toBeUndefined();
-      expect(instance.getThing()).toBe('foo');
+      expect(instance.thing).to.be.undefined;
+      expect(instance.getThing()).to.equal('foo');
     });
 
     it('throws an error if proto disallows mixins', function() {
@@ -260,9 +282,9 @@ describe('Protomatter', function() {
         instance.mixIn(mixin);
       }
 
-      expect(tryMixin).toThrow();
-      expect(instance.getThing).toBeUndefined();
-      expect(instance.setThing).toBeUndefined();
+      expect(tryMixin).to.throw(Error);
+      expect(instance.getThing).to.be.undefined;
+      expect(instance.setThing).to.be.undefined;
     });
   });
 });
