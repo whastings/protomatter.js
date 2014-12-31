@@ -1,17 +1,27 @@
 {
-  "globalstrict": true,
-  "globals": {
-    "beforeEach": false,
-    "console": false,
-    "describe": false,
-    "document": false,
-    "expect": false,
-    "exports": false,
-    "it": false,
-    "module": false,
-    "require": false,
-    "spyOn": false,
-    "window": false
-  },
-  "sub": true
+  "browser": true,
+  "camelcase": true,
+  "debug": true,
+  "eqeqeq": true,
+  "eqnull": true,
+  "expr": true,
+  "loopfunc": true,
+  "node": true,
+  "predef": [
+    "afterEach",
+    "beforeEach",
+    "chai",
+    "describe",
+    "exports",
+    "it",
+    "module",
+    "require",
+    "window"
+  ],
+  "proto": true,
+  "strict": false,
+  "sub": true,
+  "undef": true,
+  "validthis": true
 }
+
