@@ -72,6 +72,29 @@
     return proto;
   };
 
+  Protomatter.compose = function() {
+    var protos = arguments,
+        length = protos.length,
+        protoProps = {private: {}},
+        initializers = [],
+        proto,
+        i;
+
+    for (i = 0; i < length; i++) {
+      proto = protos[i];
+      mixinProto(protoProps, proto);
+      if (typeof proto.initialize === 'function') {
+        initializers.push(proto.initialize);
+      }
+    }
+
+    if (initializers.length > 0) {
+      protoProps.initialize = chainInitializers(initializers);
+    }
+
+    return this.create(protoProps);
+  };
+
   function bindPrivateMethods(privateContext, proto) {
     while (proto && proto !== objProto) {
       if (typeof proto._bindPrivate === 'function') {
@@ -101,6 +124,14 @@
         };
       })(name);
     }
+  }
+
+  function chainInitializers(initializers) {
+    return function() {
+      for (var i = 0, length = initializers.length; i < length; i++) {
+        initializers[i].apply(this, arguments);
+      }
+    };
   }
 
   function createCallSuper(superProto) {
@@ -133,6 +164,18 @@
       }
       destination[key] = prop;
     }.bind(this));
+  }
+
+  function mixinProto(target, proto) {
+    objForEach(proto, function(prop, key) {
+      if (key !== 'initialize') {
+        target[key] = prop;
+      }
+    });
+
+    if (typeof proto._bindPrivate === 'function') {
+      proto._bindPrivate(target.private);
+    }
   }
 
   function objForEach(object, callback) {
