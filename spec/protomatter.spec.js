@@ -86,7 +86,7 @@ describe('Protomatter', function() {
         addComment: function() {
           this.saveComment();
         },
-        initialize: function() {
+        init: function() {
           this.comments = [];
         },
         numComments: function() {
@@ -98,7 +98,7 @@ describe('Protomatter', function() {
       });
 
       Likeable = Protomatter.create({
-        initialize: function() {
+        init: function() {
           this.liked = false;
         },
         isLiked: function() {
@@ -119,7 +119,7 @@ describe('Protomatter', function() {
         getTitle: function() {
           return this.title;
         },
-        initialize: function(title, text) {
+        init: function(title, text) {
           this.title = title;
           this.text = text;
         }
@@ -139,7 +139,7 @@ describe('Protomatter', function() {
       expect(likeSpy.calledOnce).to.be.true;
     });
 
-    it('should invoke all initialize methods when creating an instance', function() {
+    it('should invoke all init methods when creating an instance', function() {
       ['comments', 'liked', 'text', 'title'].forEach(function(attr) {
         expect(post[attr]).to.be.undefined;
       });
@@ -162,7 +162,7 @@ describe('Protomatter', function() {
         getVar2: function() {
           return this.var2;
         },
-        initialize: function(var1, var2, var3) {
+        init: function(var1, var2, var3) {
           this.var1 = var1;
           this.var2 = var2;
           this.public.var3 = var3;
@@ -188,7 +188,7 @@ describe('Protomatter', function() {
       expect(newObject.testProperty).to.equal('test value');
     });
 
-    it('invokes its initialize function to set initial state', function() {
+    it('invokes its init function to set initial state', function() {
       expect(newObject.getVar1()).to.equal('value1');
       expect(newObject.getVar2()).to.equal('value2');
     });
@@ -233,7 +233,7 @@ describe('Protomatter', function() {
         getBar: function() {
           return this.bar;
         },
-        initialize: function(var1, foo, bar) {
+        init: function(var1, foo, bar) {
           this.var1 = var1;
           this.foo = foo;
           this.bar = bar;

@@ -1,7 +1,7 @@
 /*!
  * Protomatter.js 0.1.0
  * https://github.com/whastings/protomatter.js
- * (c) 2014 Will Hastings
+ * (c) 2015 Will Hastings
  * Protomatter.js may be freely distributed under the MIT license.
  */
 
@@ -52,8 +52,8 @@
           privateContext = preparePrivateContext(newObject, proto);
 
       privateContext.allowMixins = !!options.allowMixins;
-      if (typeof proto.initialize === 'function') {
-        proto.initialize.apply(privateContext, arguments);
+      if (typeof proto.init === 'function') {
+        proto.init.apply(privateContext, arguments);
       }
       return newObject;
     };
@@ -75,13 +75,13 @@
     for (i = 0; i < length; i++) {
       proto = protos[i];
       mixinProto(protoProps, proto);
-      if (typeof proto.initialize === 'function') {
-        initializers.push(proto.initialize);
+      if (typeof proto.init === 'function') {
+        initializers.push(proto.init);
       }
     }
 
     if (initializers.length > 0) {
-      protoProps.initialize = chainInitializers(initializers);
+      protoProps.init = chainInitializers(initializers);
     }
 
     return this.create(protoProps);
