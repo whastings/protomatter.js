@@ -16,15 +16,13 @@
   var MIXIN_ERROR = 'This object type does not accept mixins.';
 
   Protomatter.create = function(protoProps, options) {
-    var privateMode,
-        privateMethods,
+    var privateMethods,
         proto,
         superProto;
 
     options = options || {};
     options.allowMixins = options.allowMixins === undefined ?
       true : options.allowMixins;
-    privateMode = options.privateMode === undefined ? true : options.privateMode;
     superProto = options.superProto;
 
     if (superProto) {
@@ -40,30 +38,22 @@
       }
     });
 
-    if (privateMode) {
-      privateMethods = protoProps.private;
-      if (privateMethods) {
-        proto._bindPrivate = function(context) {
-          objForEach(privateMethods, function(method, name) {
-            context[name] = method;
-          });
-        };
-      }
+    privateMethods = protoProps.private;
+    if (privateMethods) {
+      proto._bindPrivate = function(context) {
+        objForEach(privateMethods, function(method, name) {
+          context[name] = method;
+        });
+      };
     }
 
     proto.create = function() {
       var newObject = Object.create(proto),
-          privateContext,
-          initContext;
+          privateContext = preparePrivateContext(newObject, proto);
 
-      if (privateMode) {
-        privateContext = preparePrivateContext(newObject, proto);
-      }
-
-      initContext = privateMode ? privateContext : newObject;
-      initContext.allowMixins = !!options.allowMixins;
+      privateContext.allowMixins = !!options.allowMixins;
       if (typeof proto.initialize === 'function') {
-        proto.initialize.apply(initContext, arguments);
+        proto.initialize.apply(privateContext, arguments);
       }
       return newObject;
     };

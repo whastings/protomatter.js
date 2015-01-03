@@ -252,23 +252,6 @@ describe('Protomatter', function() {
 
       expect(newObject.publicMethod()).to.equal('foo bar');
     });
-
-    describe('when private mode off', function() {
-      beforeEach(function() {
-        Proto = Protomatter.create({
-          initialize: function(var1, var2) {
-            this.var1 = var1;
-            this.var2 = var2;
-          }
-        }, {privateMode: false});
-        newObject = Proto.create('value1', 'value2');
-      });
-
-      it('does not prevent public access to instance variables', function() {
-        expect(newObject.var1).to.equal('value1');
-        expect(newObject.var2).to.equal('value2');
-      });
-    });
   });
 
   describe('Proto.callSuper', function() {
