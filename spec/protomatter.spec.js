@@ -49,7 +49,7 @@ describe('Protomatter', function() {
           properties = {testProperty: 'test value'};
 
       beforeEach(function() {
-        proto = Protomatter.create(properties, superProto);
+        proto = Protomatter.create(properties, {superProto: superProto});
       });
 
       it("sets proto's prototype to superProto", function() {
@@ -224,12 +224,12 @@ describe('Protomatter', function() {
       var Proto2,
           Proto3;
 
-      Proto2 = Protomatter.create({
+      Proto2 = Proto.extend({
         getFoo: function() {
           return this.foo;
         }
-      }, Proto);
-      Proto3 = Protomatter.create({
+      });
+      Proto3 = Proto2.extend({
         getBar: function() {
           return this.bar;
         },
@@ -238,7 +238,7 @@ describe('Protomatter', function() {
           this.foo = foo;
           this.bar = bar;
         }
-      }, Proto2);
+      });
 
       newObject = Proto3.create('value1', 'baz', 'qux');
       expect(newObject.getVar1()).to.equal('value1');
@@ -247,7 +247,7 @@ describe('Protomatter', function() {
     });
 
     it('binds all private methods in prototype chain to private context', function() {
-      var Proto2 = Protomatter.create({}, Proto);
+      var Proto2 = Proto.extend({});
       newObject = Proto2.create('foo', 'bar', 'baz');
 
       expect(newObject.publicMethod()).to.equal('foo bar');
@@ -260,7 +260,7 @@ describe('Protomatter', function() {
             this.var1 = var1;
             this.var2 = var2;
           }
-        }, null, {privateMode: false});
+        }, {privateMode: false});
         newObject = Proto.create('value1', 'value2');
       });
 
@@ -286,11 +286,11 @@ describe('Protomatter', function() {
       spy = sandbox.stub(SuperProto, 'superMethod');
       spy.returns('return value');
 
-      Proto = Protomatter.create({
+      Proto = SuperProto.extend({
         protoMethod: function() {
           return this.callSuper('superMethod', 'an argument');
         }
-      }, SuperProto);
+      });
       object = Proto.create();
       returnVal = object.protoMethod();
     });
@@ -319,13 +319,15 @@ describe('Protomatter', function() {
     it('delegates to Protomatter.create() to set up inheritance', function() {
       var Proto = Protomatter.create({}),
           props = {},
-          options = {},
+          options = {foo: 'bar'},
           result = {},
           spy = sandbox.stub(Protomatter, 'create');
       spy.returns(result);
 
       expect(Proto.extend(props, options)).to.equal(result);
-      expect(spy.calledWith(props, Proto, options)).to.be.true;
+      expect(
+        spy.calledWith(props, {foo: 'bar', superProto: Proto})
+      ).to.be.true;
     });
   });
 
@@ -356,7 +358,7 @@ describe('Protomatter', function() {
     });
 
     it('throws an error if proto disallows mixins', function() {
-      Proto = Protomatter.create({}, null, {allowMixins: false});
+      Proto = Protomatter.create({}, {allowMixins: false});
       instance = Proto.create();
       function tryMixin() {
         instance.mixIn(mixin);

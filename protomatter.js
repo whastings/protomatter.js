@@ -15,15 +15,17 @@
 
   var MIXIN_ERROR = 'This object type does not accept mixins.';
 
-  Protomatter.create = function(protoProps, superProto, options) {
+  Protomatter.create = function(protoProps, options) {
     var privateMode,
         privateMethods,
-        proto;
+        proto,
+        superProto;
 
     options = options || {};
     options.allowMixins = options.allowMixins === undefined ?
       true : options.allowMixins;
     privateMode = options.privateMode === undefined ? true : options.privateMode;
+    superProto = options.superProto;
 
     if (superProto) {
       proto = Object.create(superProto);
@@ -146,7 +148,9 @@
   }
 
   function extend(props, options) {
-    return Protomatter.create(props, this, options);
+    options = options || {};
+    options.superProto = this;
+    return Protomatter.create(props, options);
   }
 
   function mixIn(mixin) {
