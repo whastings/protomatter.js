@@ -84,8 +84,8 @@ describe('Protomatter', function() {
         addComment: function() {
           this.saveComment();
         },
-        init: function() {
-          this.comments = [];
+        init: function(options) {
+          this.comments = options.comments;
         },
         numComments: function() {
           return this.comments.length;
@@ -96,8 +96,8 @@ describe('Protomatter', function() {
       });
 
       Likeable = Protomatter.create({
-        init: function() {
-          this.liked = false;
+        init: function(options) {
+          this.liked = options.liked;
         },
         isLiked: function() {
           return this.liked;
@@ -117,14 +117,19 @@ describe('Protomatter', function() {
         getTitle: function() {
           return this.title;
         },
-        init: function(title, text) {
-          this.title = title;
-          this.text = text;
+        init: function(options) {
+          this.title = options.title;
+          this.text = options.text;
         }
       });
 
       Post = Protomatter.compose(Post, Commentable, Likeable);
-      post = Post.create('Prototypal OO', '...');
+      post = Post.create({
+        comments: [],
+        liked: false,
+        text: '...',
+        title: 'Prototypal OO'
+      });
     });
 
     it('should create a prototype composed of all passed prototypes', function() {
@@ -360,6 +365,57 @@ describe('Protomatter', function() {
       expect(tryMixin).to.throw(Error);
       expect(instance.getThing).to.be.undefined;
       expect(instance.setThing).to.be.undefined;
+    });
+  });
+
+  describe('limitations', function() {
+    var Proto;
+
+    beforeEach(function() {
+      Proto = Protomatter.create({
+        init: function() {
+          this.foo = 'bar';
+        }
+      });
+    });
+
+    it('methods added after instantiation cannot access private context', function() {
+      var instance = Proto.create();
+      instance.getFoo = function() {
+        return this.foo;
+      };
+
+      expect(instance.getFoo()).to.be.undefined;
+    });
+
+    it('methods added to prototype after instantiation cannot access private context', function() {
+      var instance = Proto.create();
+      Proto.getFoo = function() {
+        return this.foo;
+      };
+
+      expect(instance.getFoo()).to.be.undefined;
+    });
+
+    describe('instanceof', function() {
+      var Proto2,
+          instance;
+
+      beforeEach(function() {
+        Proto2 = Proto.extend({});
+        instance = Proto2.create();
+      });
+
+      it('throws an error when passed a prototype', function() {
+        expect(function() {
+          instance instanceof Proto2;
+        }).to.throw(Error);
+      });
+
+      it('can be replaced with isPrototypeOf()', function() {
+        expect(Proto2.isPrototypeOf(instance)).to.be.true;
+        expect(Proto.isPrototypeOf(instance)).to.be.true;
+      });
     });
   });
 });
