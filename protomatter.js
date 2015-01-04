@@ -97,7 +97,8 @@
   }
 
   function bindPublicMethods(proto, newObject, privateContext) {
-    var method,
+    var globalContext = typeof global === 'undefined' ? window : global,
+        method,
         name;
 
     for (name in proto) {
@@ -109,8 +110,12 @@
 
       newObject[name] = (function(methodName) {
         return function() {
-          // Allow context to be overriden by apply() or call().
-          var context = this === newObject ? privateContext : this;
+          var usePrivateContext, context;
+          // Allow context to be overriden by apply() or call(),
+          // but prevent context to be global scope or undefined.
+          usePrivateContext = this === newObject || this === globalContext ||
+            this === undefined;
+          context = usePrivateContext ? privateContext : this;
           // Look up method again to allow late-binding.
           return proto[methodName].apply(context, arguments);
         };

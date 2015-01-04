@@ -1,5 +1,3 @@
-'use strict';
-
 var expect,
     Protomatter,
     sinon;
@@ -218,6 +216,18 @@ describe('Protomatter', function() {
       };
 
       expect(newObject.getVar1()).to.equal('something else');
+    });
+
+    it('prevents public methods from executing w/ global context', function() {
+      var method = newObject.getVar1;
+
+      expect(method()).to.equal('value1');
+    });
+
+    it('prevents public methods from executing w/ undefined context', function() {
+      var method = newObject.getVar1;
+
+      expect(method.call(undefined)).to.equal('value1');
     });
 
     it('binds all public methods in prototype chain to private context', function() {
