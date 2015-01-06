@@ -10,12 +10,15 @@
   "predef": [
     "afterEach",
     "beforeEach",
+    "expect",
     "chai",
     "describe",
     "exports",
     "it",
     "module",
+    "Protomatter",
     "require",
+    "sinon",
     "window"
   ],
   "proto": true,

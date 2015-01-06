@@ -2,12 +2,13 @@
   "framework": "mocha+chai",
   "launchers": {
     "mocha": {
-      "command": "node_modules/mocha/bin/mocha spec/protomatter.spec.js"
+      "command": "node_modules/mocha/bin/mocha spec/"
     }
   },
   "src_files": [
     "protomatter.js",
     "node_modules/sinon/pkg/sinon.js",
-    "spec/protomatter.spec.js"
+    "spec/before.js",
+    "spec/**/*.spec.js"
   ]
 }
