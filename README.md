@@ -15,6 +15,7 @@ featuring private instance properties and private methods.
   * [Concatenative/Multiple Inheritance and Prototype Composition](#concatenativemultiple-inheritance-and-prototype-composition)
   * [Mixin Support](#mixin-support)
   * [Managing Public Properties](#managing-public-properties)
+  * [Working with Constructors](#working-with-constructors)
 * [Environment Support](#environment-support)
 * [Performance Considerations](#performance-considerations)
 * [Limitations](#limitations)
@@ -319,6 +320,34 @@ var tom = Person.create('Tom', 'Johnson');
 console.log(tom.firstName); // undefined
 console.log(tom.lastName); // undefined
 console.log(tom.fullName); // 'Tom Johnson'
+```
+
+### Working with Constructors
+
+If you have to work with code implemented with constructors, say a third-party
+library you can't change, you can convert it to a Protomatter prototype with
+`Protomatter.convert()`. It takes a constructor function and returns a prototype
+with the properties of the constructor's `.prototype` object, and uses the
+constructor itself as the new prototype's `init()` method.
+
+```javascript
+var Constructor = function(foo, bar) {
+  this.foo = foo;
+  this.bar = bar;
+};
+
+Constructor.prototype.getBar = function() {
+  return this.bar;
+};
+Constructor.prototype.getFoo = function() {
+  return this.foo;
+};
+
+var ConvertedProto = Protomatter.convert(Constructor),
+    instance = ConvertedProto.create('baz', 'qux');
+
+console.log(instance.getBar()); // 'qux'
+console.log(instance.getFoo()); // 'baz'
 ```
 
 ## Environment Support

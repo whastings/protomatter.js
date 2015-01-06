@@ -87,6 +87,12 @@
     return this.create(protoProps);
   };
 
+  Protomatter.convert = function(constructor, options) {
+    var Proto = Protomatter.create(constructor.prototype, options);
+    Proto.init = constructor;
+    return Proto;
+  };
+
   function bindPrivateMethods(privateContext, proto) {
     while (proto && proto !== objProto) {
       if (typeof proto._bindPrivate === 'function') {
