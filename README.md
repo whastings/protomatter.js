@@ -190,16 +190,17 @@ properties from another object. This process is sometimes called *concatenative
 inheritance*, and it allows for multiple inheritance in JS.
 
 Protomatter supports concatenative inheritance by enabling you to compose
-multiple prototypes together using the `Protomatter.compose()` method. It takes
-a variable number of prototypes as arguments and returns a new prototype with
-the properties from all the passed objects copied to it. This makes it easy to
-componentize groups of functionality into multiple prototypes and combine them
-in various ways.
+multiple objects/prototypes together using the `Protomatter.compose()` method.
+It takes a variable number of prototypes as arguments and returns a new
+prototype with the properties from all the passed objects copied to it. This
+makes it easy to componentize groups of functionality into multiple prototypes
+and combine them in various ways.
 
 When you compose prototypes, the resulting prototype's `init()` method will
 invoke the `init()` methods provided by all composed prototypes, passing along
-any arguments. It's best to pass an object literal with named arguments instead
-of relying on positional arguments.
+any arguments. Since all init methods get the same arguments, it's best to pass
+an object literal with named arguments instead of relying on positional
+arguments.
 
 ```javascript
 var Commentable = Protomatter.create({
@@ -236,7 +237,7 @@ var Likeable = Protomatter.create({
   }
 });
 
-Post = Protomatter.create({
+Post = Protomatter.compose({
   getText: function() {
     return this.text;
   },
@@ -247,9 +248,8 @@ Post = Protomatter.create({
     this.title = options.title;
     this.text = options.text;
   }
-});
+}, Commentable, Likeable);
 
-Post = Protomatter.compose(Post, Commentable, Likeable);
 post = Post.create({
   comments: [],
   liked: false,

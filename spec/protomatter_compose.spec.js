@@ -42,7 +42,7 @@ describe('Protomatter.compose()', function() {
       }
     });
 
-    Post = Protomatter.create({
+    Post = Protomatter.compose({
       getText: function() {
         return this.text;
       },
@@ -53,9 +53,8 @@ describe('Protomatter.compose()', function() {
         this.title = options.title;
         this.text = options.text;
       }
-    });
+    }, Commentable, Likeable);
 
-    Post = Protomatter.compose(Post, Commentable, Likeable);
     post = Post.create({
       comments: [],
       liked: false,
