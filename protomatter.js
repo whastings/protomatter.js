@@ -88,7 +88,13 @@
   };
 
   Protomatter.convert = function(constructor, options) {
-    var Proto = Protomatter.create(constructor.prototype, options);
+    var Proto;
+    options = options || {};
+    if (constructor.prototype !== objProto) {
+      options.superProto = Object.getPrototypeOf(constructor.prototype);
+    }
+
+    Proto = Protomatter.create(constructor.prototype, options);
     Proto.init = constructor;
     return Proto;
   };

@@ -328,13 +328,21 @@ If you have to work with code implemented with constructors, say a third-party
 library you can't change, you can convert it to a Protomatter prototype with
 `Protomatter.convert()`. It takes a constructor function and returns a prototype
 with the properties of the constructor's `.prototype` object, and uses the
-constructor itself as the new prototype's `init()` method.
+constructor itself as the new prototype's `init()` method. If the constructor's
+prototype inherits from another prototype, Protomatter will have the new
+prototype inherit from it as well.
 
 ```javascript
+var SuperProto = {
+  // ...
+};
+
 var Constructor = function(foo, bar) {
   this.foo = foo;
   this.bar = bar;
 };
+
+Constructor.prototype = Object.create(SuperProto);
 
 Constructor.prototype.getBar = function() {
   return this.bar;
@@ -348,6 +356,7 @@ var ConvertedProto = Protomatter.convert(Constructor),
 
 console.log(instance.getBar()); // 'qux'
 console.log(instance.getFoo()); // 'baz'
+console.log(Object.getPrototypeOf(ConvertedProto) === SuperProto); // true
 ```
 
 ## Environment Support

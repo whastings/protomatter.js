@@ -1,11 +1,15 @@
 describe('Protomatter.convert()', function() {
-  var Constructor;
+  var Constructor,
+      SuperProto;
 
   beforeEach(function() {
     Constructor = function(foo, bar) {
       this.foo = foo;
       this.bar = bar;
     };
+
+    SuperProto = {};
+    Constructor.prototype = Object.create(SuperProto);
 
     Constructor.prototype.double = function(num) {
       return num * 2;
@@ -57,5 +61,11 @@ describe('Protomatter.convert()', function() {
     expect(function() {
       instance.mixIn({});
     }).to.throw(Error);
+  });
+
+  it('links the new prototype to the constructor\'s inheritance tree', function() {
+    var ConvertedProto = Protomatter.convert(Constructor);
+
+    expect(Object.getPrototypeOf(ConvertedProto)).to.equal(SuperProto);
   });
 });
