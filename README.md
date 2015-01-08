@@ -10,6 +10,7 @@ featuring private instance properties and private methods.
 * [Usage](#usage)
   * [Creating a Prototype](#creating-a-prototype)
   * [Creating Instances](#creating-instances)
+  * [Using Public Methods](#using-public-methods)
   * [Linking Prototypes for Inheritance](#linking-prototypes-for-inheritance)
   * [Invoking Methods from Super Prototypes](#invoking-methods-from-super-prototypes)
   * [Concatenative/Multiple Inheritance and Prototype Composition](#concatenativemultiple-inheritance-and-prototype-composition)
@@ -135,6 +136,47 @@ console.log(contactModal.removeBackdrop); // undefined
 // Public methods are accessible and can access state:
 console.log(contactModal.getBody()); // 'contact@protomatter.js'
 console.log(contactModal.getTitle()); // 'Contact Us'
+```
+
+### Using Public Methods
+
+Public methods on an instance object are able to access private state because
+behind the scenes Protomatter sets a second, hidden object that holds the state
+as the method context. Though this is the default behavior, you can still
+override the context of a method with `.call()` and `.apply()`:
+
+```javascript
+var Proto = Protomatter.create({
+  init: function(foo) {
+    this.foo = foo;
+  },
+  getFoo: function() {
+    return this.foo;
+  }
+});
+var instance = Proto.create('foo');
+console.log(instance.getFoo()); // 'foo'
+
+var newContext = {foo: 'bar'};
+console.log(instance.getFoo.call(newContext)); // 'bar'
+```
+
+As a convenience, Protomatter will switch the context of a method invocation
+back to its instance if it's invoked with the global object or undefined as the
+context. This is particularly nice in that you no longer need to manually
+`bind()` methods you pass as callbacks.
+
+```javascript
+var Proto = Protomatter.create({
+  handleClick: function() {
+    // ...
+  }
+});
+var instance = Proto.create();
+
+// `this` in handleClick will be instance when the button is clicked.
+document.querySelector('#a-button')
+  .addEventListener('click', instance.handleClick);
 ```
 
 ### Linking Prototypes for Inheritance
