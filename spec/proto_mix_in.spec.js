@@ -35,4 +35,10 @@ describe('Proto.mixIn()', function() {
     expect(instance.getThing).to.be.undefined;
     expect(instance.setThing).to.be.undefined;
   });
+
+  it('throws an error if mixin passed is not an object', function() {
+    expect(function() {
+      instance.mixIn('darkside');
+    }).to.throw(Error);
+  });
 });

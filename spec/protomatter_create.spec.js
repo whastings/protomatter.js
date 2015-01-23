@@ -40,5 +40,24 @@ describe('Protomatter.create()', function() {
     it('adds a callSuper method to proto', function() {
       expect(proto.callSuper).to.be.a('function');
     });
+
+    it('throws an error if superProto is not an object', function() {
+      expect(function() {
+        Protomatter.create({}, {superProto: 'darkside'});
+      }).to.throw(Error, 'Given superProto is not an object.');
+    });
+  });
+
+  it('creates an empty prototype if no properties are passed', function() {
+    var proto = Protomatter.create();
+
+    // Only three properties added by Protomatter.create().
+    expect(Object.keys(proto).length).to.equal(3);
+  });
+
+  it('throws an error if protoProps.private is not an object', function() {
+    expect(function() {
+      Protomatter.create({private: 'darkside'});
+    }).to.throw(Error);
   });
 });

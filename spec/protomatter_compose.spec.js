@@ -67,7 +67,7 @@ describe('Protomatter.compose()', function() {
     sandbox.restore();
   });
 
-  it('should create a prototype composed of all passed prototypes', function() {
+  it('creates a prototype composed of all passed prototypes', function() {
     post.addComment();
     post.like();
 
@@ -77,7 +77,7 @@ describe('Protomatter.compose()', function() {
     expect(likeSpy.calledOnce).to.be.true;
   });
 
-  it('should invoke all init methods when creating an instance', function() {
+  it('invokes all init methods when creating an instance', function() {
     ['comments', 'liked', 'text', 'title'].forEach(function(attr) {
       expect(post[attr]).to.be.undefined;
     });
@@ -85,5 +85,17 @@ describe('Protomatter.compose()', function() {
     expect(post.isLiked()).to.be.false;
     expect(post.getText()).to.equal('...');
     expect(post.getTitle()).to.equal('Prototypal OO');
+  });
+
+  it('throws an error if less than two arguments passed', function() {
+    expect(function() {
+      Protomatter.compose({});
+    }).to.throw(Error);
+  });
+
+  it('throws an error if prototype passed is not an object', function() {
+    expect(function() {
+      Protomatter.compose({}, 'darkside');
+    }).to.throw(Error);
   });
 });

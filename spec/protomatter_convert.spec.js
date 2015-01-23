@@ -68,4 +68,10 @@ describe('Protomatter.convert()', function() {
 
     expect(Object.getPrototypeOf(ConvertedProto)).to.equal(SuperProto);
   });
+
+  it('throws an error if constructor passed is not a function', function() {
+    expect(function() {
+      Protomatter.convert({});
+    }).to.throw('Constructor passed is not a function.', Error);
+  });
 });

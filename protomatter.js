@@ -13,7 +13,13 @@
       slice = Array.prototype.slice,
       objProto = Object.prototype;
 
-  var MIXIN_ERROR = 'This object type does not accept mixins.';
+  var COMPOSE_NUM_ERROR = 'Pass two or more prototypes to compose them.',
+      CONSTRUCTOR_ERROR = 'Constructor passed is not a function.',
+      MIXIN_ALLOWED_ERROR = 'This object type does not accept mixins.',
+      MIXIN_ERROR = 'Mixin passed is not an object',
+      PRIVATE_METHOD_ERROR = 'Private methods passed must be in an object.',
+      PROTO_OBJ_ERROR = 'Prototype passed is not an object.',
+      SUPER_PROTO_ERROR = 'Given superProto is not an object.';
 
   /**
    * Creates a new Protomatter prototype.
@@ -27,6 +33,8 @@
    * @property {Object}  [options.superProto] - The prototype object for the
    *                     new prototype to inherit from.
    *
+   * @throws   Error if superProto given is not an object.
+   * @throws   Error if private key is not an object.
    * @return   {Object} - The new prototype.
    */
   Protomatter.create = function(protoProps, options) {
@@ -38,8 +46,12 @@
     options.allowMixins = options.allowMixins === undefined ?
       true : options.allowMixins;
     superProto = options.superProto;
+    protoProps = protoProps || {};
 
     if (superProto) {
+      if (!isObject(superProto)) {
+        throw new Error(SUPER_PROTO_ERROR);
+      }
       proto = Object.create(superProto);
       /**
        * Invokes a method on the parent prototype.
@@ -63,6 +75,9 @@
 
     privateMethods = protoProps.private;
     if (privateMethods) {
+      if (!isObject(privateMethods)) {
+        throw new Error(PRIVATE_METHOD_ERROR);
+      }
       /**
        * Adds prototype's private methods to another object
        * @private
@@ -88,7 +103,7 @@
           privateContext = preparePrivateContext(newObject, proto);
 
       privateContext.allowMixins = !!options.allowMixins;
-      if (typeof proto.init === 'function') {
+      if (isFunction(proto.init)) {
         proto.init.apply(privateContext, arguments);
       }
       return newObject;
@@ -106,6 +121,7 @@
      * @param {Object} mixin - Object with the properties to mix in.
      *
      * @throws Error if instance's prototype has allowMixins set to false.
+     * @throws Error if mixin passed isn't an object.
      */
     proto.mixIn = mixIn;
 
@@ -117,6 +133,7 @@
    *
    * @param  {...Objects} - Objects to combine into a new prototype.
    *
+   * @throws Error if less than two prototypes passed.
    * @return {Object} The new prototype.
    */
   Protomatter.compose = function() {
@@ -127,10 +144,14 @@
         proto,
         i;
 
+    if (length < 2) {
+      throw new Error(COMPOSE_NUM_ERROR);
+    }
+
     for (i = 0; i < length; i++) {
       proto = protos[i];
       mixinProto(protoProps, proto);
-      if (typeof proto.init === 'function') {
+      if (isFunction(proto.init)) {
         initializers.push(proto.init);
       }
     }
@@ -148,11 +169,17 @@
    * @param {Function} constructor - The constructor to convert.
    * @param {Object}   options - The options to pass to Protomatter.create().
    *
+   * @throws Error if constructor passed isn't a function.
    * @return {Object} The converted prototype.
    */
   Protomatter.convert = function(constructor, options) {
     var Proto;
     options = options || {};
+
+    if (!isFunction(constructor)) {
+      throw new Error(CONSTRUCTOR_ERROR);
+    }
+
     if (constructor.prototype !== objProto) {
       options.superProto = Object.getPrototypeOf(constructor.prototype);
     }
@@ -171,7 +198,7 @@
    */
   function bindPrivateMethods(privateContext, proto) {
     while (proto && proto !== objProto) {
-      if (typeof proto._bindPrivate === 'function') {
+      if (isFunction(proto._bindPrivate)) {
         proto._bindPrivate(privateContext);
       }
       proto = Object.getPrototypeOf(proto);
@@ -194,7 +221,7 @@
     for (name in proto) {
       method = proto[name];
       // Don't bind methods on Object.prototype.
-      if (typeof method !== 'function' || method === objProto[name]) {
+      if (!isFunction(method) || method === objProto[name]) {
         continue;
       }
 
@@ -240,7 +267,7 @@
   function createCallSuper(superProto) {
     return function callSuper(methodName) {
       var args;
-      if (typeof superProto[methodName] !== 'function') {
+      if (!isFunction(superProto[methodName])) {
         throw new Error('Method ' + methodName + ' is not defined.');
       }
       args = slice.call(arguments, 1);
@@ -260,6 +287,31 @@
   }
 
   /**
+   * Checks if value is a function.
+   * @private
+   *
+   * @param {*} value - Value to check.
+   *
+   * @return {Boolean} True if value is a function.
+   */
+  function isFunction(value) {
+    return typeof value === 'function';
+  }
+
+  /**
+   * Checks if value is an object.
+   * @private
+   *
+   * @param {*} value - Value to check.
+   *
+   * @return {Boolean} True if value is an object.
+   */
+  function isObject(value) {
+    var type = typeof value;
+    return type === 'object' || type === 'function';
+  }
+
+  /**
    * The implementation of proto.mixIn().
    * @private
    * @see {@link proto.mixIn}
@@ -268,13 +320,17 @@
     var destination;
 
     if (!this.allowMixins) {
+      throw new Error(MIXIN_ALLOWED_ERROR);
+    }
+
+    if (!isObject(mixin)) {
       throw new Error(MIXIN_ERROR);
     }
 
     destination = typeof this.public === 'object' ? this.public : this;
 
     objForEach(mixin, function(prop, key) {
-      if (typeof prop === 'function') {
+      if (isFunction(prop)) {
         prop = prop.bind(this);
       }
       destination[key] = prop;
@@ -287,15 +343,21 @@
    *
    * @param {Object} target - The object to copy the properties to.
    * @param {Object} proto - The object to copy the properties from.
+   *
+   * @throws Error if prototype passed isn't an object.
    */
   function mixinProto(target, proto) {
+    if (!isObject(proto)) {
+      throw new Error(PROTO_OBJ_ERROR);
+    }
+
     objForEach(proto, function(prop, key) {
       if (key !== 'initialize') {
         target[key] = prop;
       }
     });
 
-    if (typeof proto._bindPrivate === 'function') {
+    if (isFunction(proto._bindPrivate)) {
       proto._bindPrivate(target.private);
     }
   }
