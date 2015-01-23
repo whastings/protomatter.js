@@ -110,6 +110,21 @@ var Modal = Protomatter.create({
 });
 ```
 
+You can also pass a function instead of an object. The function should return
+an object with the properties to add to the new prototype. This can be
+convenient for encapsulating your prototype's properties.
+
+```javascript
+var Modal = Protomatter.create(function() {
+  return {
+    init: function() {
+      // ...
+    },
+    // ...
+  };
+});
+```
+
 ### Creating Instances
 
 Protomatter adds a `create()` method to your prototypes that you can call to

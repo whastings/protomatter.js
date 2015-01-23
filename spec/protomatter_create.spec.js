@@ -60,4 +60,16 @@ describe('Protomatter.create()', function() {
       Protomatter.create({private: 'darkside'});
     }).to.throw(Error);
   });
+
+  it('accepts a function to call for protoprops', function() {
+    var proto = Protomatter.create(function() {
+      return {
+        var1: 'value1',
+        var2: 'value2'
+      };
+    });
+
+    expect(proto.var1).to.equal('value1');
+    expect(proto.var2).to.equal('value2');
+  });
 });
