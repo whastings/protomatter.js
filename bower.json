@@ -1,21 +1,32 @@
 {
   "name": "protomatter",
   "main": "protomatter.js",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "https://github.com/whastings/protomatter.js",
   "authors": [
     "Will Hastings <will@objectdotcreate.net>"
   ],
-  "description": "A simple tool for constructor-less prototypal inheritance in JavaScript.",
+  "description": "A JavaScript object creation library featuring private properties and private methods.",
   "moduleType": [
     "globals",
     "node"
   ],
   "keywords": [
+    "class",
+    "composition",
+    "concatenative",
+    "context",
+    "encapsulation",
+    "extend",
+    "inheritance",
+    "instances",
     "JavaScript",
+    "mixin",
+    "object",
+    "privacy",
     "prototype",
     "prototypal",
-    "inheritance",
+    "state",
     "super"
   ],
   "license": "MIT"

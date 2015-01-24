@@ -13,7 +13,7 @@ gulp.task('build', ['specs'], function() {
   return gulp.src('./protomatter.js')
     .pipe(jshint())
     .pipe(jshint.reporter('default'))
-    .pipe(uglify())
+    .pipe(uglify({preserveComments: 'some'}))
     .pipe(rename('protomatter.min.js'))
     .pipe(gulp.dest('.'));
 });

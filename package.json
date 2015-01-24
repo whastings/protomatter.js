@@ -1,7 +1,7 @@
 {
   "name": "protomatter",
-  "version": "0.1.0",
-  "description": "A simple tool for constructor-less prototypal inheritance in JavaScript.",
+  "version": "0.2.0",
+  "description": "A JavaScript object creation library featuring private properties and private methods.",
   "main": "protomatter.js",
   "scripts": {
     "test": "./node_modules/testem/testem.js -l mocha"
@@ -10,19 +10,30 @@
     "type": "git",
     "url": "git://github.com/whastings/protomatter.js.git"
   },
-  "keywords": [
-    "JavaScript",
-    "inheritance",
-    "prototypal",
-    "prototype",
-    "super"
-  ],
   "author": "Will Hastings",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/whastings/protomatter.js/issues"
   },
   "homepage": "https://github.com/whastings/protomatter.js",
+  "keywords": [
+    "class",
+    "composition",
+    "concatenative",
+    "context",
+    "encapsulation",
+    "extend",
+    "inheritance",
+    "instances",
+    "JavaScript",
+    "mixin",
+    "object",
+    "privacy",
+    "prototype",
+    "prototypal",
+    "state",
+    "super"
+  ],
   "devDependencies": {
     "sinon": "~1.12.2",
     "testem": "~0.6.24",
