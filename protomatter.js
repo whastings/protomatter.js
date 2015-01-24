@@ -89,7 +89,7 @@
       proto._copyPrivate = function(context, softBind) {
         objForEach(privateMethods, function(method, name) {
           if (softBind) {
-            context[name] = function() {
+            context[name] = function protomatterPrivateWrapper() {
               var callContext = (this === globalContext || this === undefined) ?
                 context : this;
               return method.apply(callContext, arguments);
@@ -235,7 +235,7 @@
       }
 
       newObject[name] = (function(methodName) {
-        return function() {
+        return function protomatterPublicWrapper() {
           var usePrivateContext, context;
           // Allow context to be overriden by apply() or call(),
           // but prevent context to be global scope or undefined.
@@ -258,7 +258,7 @@
    * @return {Function} The wrapper function.
    */
   function chainInitializers(initializers) {
-    return function() {
+    return function protomatterChainedInit() {
       for (var i = 0, length = initializers.length; i < length; i++) {
         initializers[i].apply(this, arguments);
       }
