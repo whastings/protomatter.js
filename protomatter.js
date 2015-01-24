@@ -11,7 +11,8 @@
 
   var Protomatter = {},
       slice = Array.prototype.slice,
-      objProto = Object.prototype;
+      objProto = Object.prototype,
+      globalContext = typeof global === 'undefined' ? window : global;
 
   var COMPOSE_NUM_ERROR = 'Pass two or more prototypes to compose them.',
       CONSTRUCTOR_ERROR = 'Constructor passed is not a function.',
@@ -82,11 +83,20 @@
        * Adds prototype's private methods to another object
        * @private
        *
-       * @param {Object} context - The object to copy private methods to.
+       * @param {Object}  context - The object to copy private methods to.
+       * @param {Boolean} [softBind] - If true, softbind each method to the context.
        */
-      proto._bindPrivate = function(context) {
+      proto._copyPrivate = function(context, softBind) {
         objForEach(privateMethods, function(method, name) {
-          context[name] = method;
+          if (softBind) {
+            context[name] = function() {
+              var callContext = (this === globalContext || this === undefined) ?
+                context : this;
+              return method.apply(callContext, arguments);
+            };
+          } else {
+            context[name] = method;
+          }
         });
       };
     }
@@ -198,8 +208,8 @@
    */
   function bindPrivateMethods(privateContext, proto) {
     while (proto && proto !== objProto) {
-      if (isFunction(proto._bindPrivate)) {
-        proto._bindPrivate(privateContext);
+      if (isFunction(proto._copyPrivate)) {
+        proto._copyPrivate(privateContext, true);
       }
       proto = Object.getPrototypeOf(proto);
     }
@@ -214,8 +224,7 @@
    * @param {Object} privateContext - The new instance's private context
    */
   function bindPublicMethods(proto, newObject, privateContext) {
-    var globalContext = typeof global === 'undefined' ? window : global,
-        method,
+    var method,
         name;
 
     for (name in proto) {
@@ -357,8 +366,8 @@
       }
     });
 
-    if (isFunction(proto._bindPrivate)) {
-      proto._bindPrivate(target.private);
+    if (isFunction(proto._copyPrivate)) {
+      proto._copyPrivate(target.private);
     }
   }
 

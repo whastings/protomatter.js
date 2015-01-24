@@ -112,4 +112,32 @@ describe('Proto.create()', function() {
 
     expect(newObject.publicMethod()).to.equal('foo bar');
   });
+
+  it('prevents private method from executing with global context', function() {
+    Proto.callPrivate = function() {
+      var privateMethod = this.privateMethod;
+      return privateMethod();
+    };
+    newObject = Proto.create('foo', 'bar', 'baz');
+
+    expect(newObject.callPrivate()).to.equal('foo bar');
+  });
+
+  it('prevents private method from executing with undefined context', function() {
+    Proto.callPrivate = function() {
+      return this.privateMethod.call(undefined);
+    };
+    newObject = Proto.create('foo', 'bar', 'baz');
+
+    expect(newObject.callPrivate()).to.equal('foo bar');
+  });
+
+  it('allows changing context for private method', function() {
+    Proto.callPrivate = function(context) {
+      return this.privateMethod.call(context);
+    };
+    newObject = Proto.create('foo', 'bar', 'baz');
+
+    expect(newObject.callPrivate({var1: 'baz', var2: 'qux'})).to.equal('baz qux');
+  });
 });
