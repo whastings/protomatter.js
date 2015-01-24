@@ -5,7 +5,6 @@
  * Protomatter.js may be freely distributed under the MIT license.
  */
 
-/* global exports:true */
 (function(root) {
   'use strict';
 
@@ -26,7 +25,8 @@
    * Creates a new Protomatter prototype.
    *
    * @param    {Object}  protoProps - The properties to add
-   *                     to the new prototype.
+   *                     to the new prototype. Can also be a function
+   *                     that returns an object with properties.
    * @property {Object}  [protoProps.private] - Any private methods.
    * @param    {Object}  [options] - Configuration for the new prototype.
    * @property {Boolean} [options.allowMixins=true] - Whether to allow mixins
@@ -48,6 +48,10 @@
       true : options.allowMixins;
     superProto = options.superProto;
     protoProps = protoProps || {};
+
+    if (isFunction(protoProps)) {
+      protoProps = protoProps();
+    }
 
     if (superProto) {
       if (!isObject(superProto)) {
