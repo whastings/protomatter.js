@@ -17,6 +17,7 @@ featuring private instance properties and private methods.
   * [Mixin Support](#mixin-support)
   * [Managing Public Properties](#managing-public-properties)
   * [Working with Constructors](#working-with-constructors)
+* [Object Privacy Implementation Details](#object-privacy-implementation-details)
 * [Environment Support](#environment-support)
 * [Performance Considerations](#performance-considerations)
 * [Limitations](#limitations)
@@ -415,6 +416,13 @@ console.log(instance.getBar()); // 'qux'
 console.log(instance.getFoo()); // 'baz'
 console.log(Object.getPrototypeOf(ConvertedProto) === SuperProto); // true
 ```
+
+## Object Privacy Implementation Details
+
+If you're interested in the technical details behind Protomatter, check out
+[this article on Protomatter's object privacy implementation][impl_article].
+
+[impl_article]: http://objectdotcreate.net/implementing-object-privacy-protomatter-js.html
 
 ## Environment Support
 
