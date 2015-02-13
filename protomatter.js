@@ -114,11 +114,18 @@
      */
     proto.create = function() {
       var newObject = Object.create(proto),
-          privateContext = preparePrivateContext(newObject, proto);
+          privateContext = preparePrivateContext(newObject, proto),
+          args;
 
       privateContext.allowMixins = !!options.allowMixins;
       if (isFunction(proto.init)) {
-        proto.init.apply(privateContext, arguments);
+        if (proto.hasOwnProperty('init')) {
+          proto.init.apply(privateContext, arguments);
+        } else {
+          args = slice.call(arguments);
+          args.unshift('init');
+          proto.callSuper.apply(privateContext, args);
+        }
       }
       return newObject;
     };
@@ -279,12 +286,23 @@
    */
   function createCallSuper(superProto) {
     return function callSuper(methodName) {
-      var args;
-      if (!isFunction(superProto[methodName])) {
+      var args, baseCallSuper, returnValue, ancestorProto;
+      ancestorProto = findProto(superProto, function(testProto) {
+        return testProto.hasOwnProperty(methodName) &&
+          isFunction(testProto[methodName]);
+      });
+
+      if (!ancestorProto) {
         throw new Error('Method ' + methodName + ' is not defined.');
       }
       args = slice.call(arguments, 1);
-      return superProto[methodName].apply(this, args);
+
+      baseCallSuper = this.callSuper;
+      this.callSuper = ancestorProto.callSuper;
+      returnValue = ancestorProto[methodName].apply(this, args);
+      this.callSuper = baseCallSuper;
+
+      return returnValue;
     };
   }
 
@@ -297,6 +315,25 @@
     options = options || {};
     options.superProto = this;
     return Protomatter.create(protoProps, options);
+  }
+
+  /**
+   * Finds prototype in prototype chain that matches a given predicate function.
+   * @private
+   *
+   * @param {Object}   proto - Prototype object to start at.
+   * @param {Function} predicate - Predicate function to pass each prototype to.
+   *
+   * @return {Object|null} The matching prototype or null.
+   */
+  function findProto(proto, predicate) {
+    while (proto) {
+      if (predicate(proto)) {
+        return proto;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+    return null;
   }
 
   /**
