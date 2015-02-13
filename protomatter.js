@@ -1,5 +1,5 @@
 /*!
- * Protomatter.js 0.2.0
+ * Protomatter.js 0.2.1
  * https://github.com/whastings/protomatter.js
  * (c) 2015 Will Hastings
  * Protomatter.js may be freely distributed under the MIT license.

@@ -1,6 +1,6 @@
 {
   "name": "protomatter",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A JavaScript object creation library featuring private properties and private methods.",
   "main": "protomatter.js",
   "scripts": {

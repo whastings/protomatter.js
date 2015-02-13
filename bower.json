@@ -1,7 +1,7 @@
 {
   "name": "protomatter",
   "main": "protomatter.js",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "homepage": "https://github.com/whastings/protomatter.js",
   "authors": [
     "Will Hastings <will@objectdotcreate.net>"
