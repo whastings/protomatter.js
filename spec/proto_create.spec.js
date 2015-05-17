@@ -23,6 +23,10 @@ describe('Proto.create()', function() {
       publicMethod: function() {
         return this.privateMethod();
       },
+      statics: {
+        iAmStatic: function() {},
+        pi: 3.14
+      },
       testProperty: 'test value'
     });
     newObject = Proto.create('value1', 'value2', 'value3');
@@ -139,5 +143,26 @@ describe('Proto.create()', function() {
     newObject = Proto.create('foo', 'bar', 'baz');
 
     expect(newObject.callPrivate({var1: 'baz', var2: 'qux'})).to.equal('baz qux');
+  });
+
+  describe('static props', function() {
+    var specialProps = ['create', 'extend'],
+        staticProps = ['iAmStatic', 'pi'];
+
+    it('sets a non-enumerable, undefined var for each static/special prop on an instance', function() {
+      staticProps.concat(specialProps).forEach(function(prop) {
+        var propDescriptor;
+        expect(newObject[prop]).to.be.undefined;
+        if (Object.getOwnPropertyDescriptor) {
+          propDescriptor = Object.getOwnPropertyDescriptor(newObject, prop);
+          expect(propDescriptor.enumerable).to.be.false;
+        }
+      });
+    });
+
+    it('makes statics available on prototype', function() {
+      expect(Proto.iAmStatic).to.be.a('function');
+      expect(Proto.pi).to.equal(3.14);
+    });
   });
 });

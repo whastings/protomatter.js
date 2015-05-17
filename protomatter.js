@@ -9,9 +9,13 @@
   'use strict';
 
   var Protomatter = {},
+      arrayForEach,
+      hideStatics,
       slice = Array.prototype.slice,
       objProto = Object.prototype,
       globalContext = typeof global === 'undefined' ? window : global;
+
+  var PROTO_METHODS = ['create', 'extend'];
 
   var COMPOSE_NUM_ERROR = 'Pass two or more prototypes to compose them.',
       CONSTRUCTOR_ERROR = 'Constructor passed is not a function.',
@@ -41,6 +45,9 @@
   Protomatter.create = function(protoProps, options) {
     var privateMethods,
         proto,
+        staticsMap = {},
+        staticProps = PROTO_METHODS.slice(),
+        statics,
         superProto;
 
     options = options || {};
@@ -73,7 +80,7 @@
     }
 
     objForEach(protoProps, function(prop, key) {
-      if (key !== 'private') {
+      if (key !== 'private' && key !== 'statics') {
         proto[key] = prop;
       }
     });
@@ -105,6 +112,17 @@
       };
     }
 
+    statics = protoProps.statics;
+    if (statics) {
+      objForEach(statics, function(value, key) {
+        staticProps.push(key);
+        proto[key] = value;
+      });
+    }
+    arrayForEach(staticProps, function(prop) {
+      staticsMap[prop] = true;
+    });
+
     /**
      * Creates a new instance of the prototype.
      *
@@ -114,9 +132,10 @@
      */
     proto.create = function() {
       var newObject = Object.create(proto),
-          privateContext = preparePrivateContext(newObject, proto),
+          privateContext = preparePrivateContext(newObject, proto, staticsMap),
           args;
 
+      hideStatics(newObject, staticProps);
       privateContext.allowMixins = !!options.allowMixins;
       if (isFunction(proto.init)) {
         if (proto.hasOwnProperty('init')) {
@@ -211,6 +230,25 @@
   };
 
   /**
+   * Applies a function to each element in an array.
+   * @private
+   *
+   * @param {Array}    array - Array to iterate over.
+   * @param {Function} func - Function to apply
+   */
+  if (Array.prototype.forEach) {
+    arrayForEach = function arrayForEach(array, func) {
+      array.forEach(func);
+    };
+  } else {
+    arrayForEach = function arrayForEach(array, func) {
+      for (var i = 0, l = array.length; i < l; i++) {
+        func(array[i]);
+      }
+    };
+  }
+
+  /**
    * Binds private methods to a new instance's private context.
    * @private
    *
@@ -233,15 +271,16 @@
    * @param {Object} proto - The instance's prototype.
    * @param {Object} newObject - The new instance.
    * @param {Object} privateContext - The new instance's private context
+   * @param {Object} staticsMap - The prototype's static methods.
    */
-  function bindPublicMethods(proto, newObject, privateContext) {
+  function bindPublicMethods(proto, newObject, privateContext, staticsMap) {
     var method,
         name;
 
     for (name in proto) {
       method = proto[name];
-      // Don't bind methods on Object.prototype.
-      if (!isFunction(method) || method === objProto[name]) {
+      // Don't bind static methods or those on Object.prototype.
+      if (!isFunction(method) || staticsMap[name] || method === objProto[name]) {
         continue;
       }
 
@@ -334,6 +373,32 @@
       proto = Object.getPrototypeOf(proto);
     }
     return null;
+  }
+
+  /**
+   * Sets props on an instance that are being used as static members of its
+   * prototype to non-enumerable props set to undefined so they won't be
+   * visible on the instance.
+   * @private
+   *
+   * @param {Object} instance - The instance to set props on.
+   * @param {Array}  staticProps - The names of the static props.
+   */
+  if (Object.defineProperty) {
+    hideStatics = function hideStatics(instance, staticProps) {
+      arrayForEach(staticProps, function(prop) {
+        Object.defineProperty(instance, prop, {
+          enumerable: false,
+          value: undefined
+        });
+      });
+    };
+  } else {
+    hideStatics = function hideStatics(instance, staticProps) {
+      arrayForEach(staticProps, function(prop) {
+        instance[prop] = undefined;
+      });
+    };
   }
 
   /**
@@ -433,15 +498,16 @@
    *
    * @param  {Object} newObject - The new instance.
    * @param  {Object} proto - The new instance's prototype.
+   * @param  {Object}  staticsMap - The prototype's static methods.
    *
    * @return {Object} The new instance's private context.
    */
-  function preparePrivateContext(newObject, proto) {
+  function preparePrivateContext(newObject, proto, staticsMap) {
     var privateContext = Object.create(newObject);
     privateContext.public = newObject;
 
     bindPrivateMethods(privateContext, proto);
-    bindPublicMethods(proto, newObject, privateContext);
+    bindPublicMethods(proto, newObject, privateContext, staticsMap);
 
     return privateContext;
   }
